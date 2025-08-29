@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat PC Parts</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+    #chat-box { border: 1px solid #ccc; padding: 15px; height: 400px; overflow-y: auto; background: #fff; }
+    .msg { margin: 10px 0; }
+    .user { font-weight: bold; color: #007bff; }
+    .bot { font-weight: bold; color: #28a745; }
+    input, button { padding: 10px; margin-top: 10px; width: 100%; }
+  </style>
+</head>
+<body>
+  <h2>💻 Chat con PC Parts</h2>
+  <div id="chat-box"></div>
+  <input type="text" id="query" placeholder="Escribe tu consulta..." />
+  <button onclick="sendMessage()">Enviar</button>
+
+  <script>
+    async function sendMessage() {
+      const query = document.getElementById("query").value;
+      if (!query) return;
+
+      const chatBox = document.getElementById("chat-box");
+      chatBox.innerHTML += `<div class="msg"><span class="user">Tú:</span> ${query}</div>`;
+
+      // Consumimos la API
+      const res = await fetch(`/chat?query=${encodeURIComponent(query)}&top_k=3`);
+      const data = await res.json();
+
+      chatBox.innerHTML += `<div class="msg"><span class="bot">Bot:</span> ${data.chat_response}</div>`;
+
+      if (data.products_used && data.products_used.length > 0) {
+        chatBox.innerHTML += `<div class="msg"><span class="bot">Productos sugeridos:</span><ul>${
+          data.products_used.map(p => `<li>${p.producto} - ${p.precio_formatted} (Código: ${p.codigo})</li>`).join("")
+        }</ul></div>`;
+      }
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+      document.getElementById("query").value = "";
+    }
+  </script>
+</body>
+</html>
